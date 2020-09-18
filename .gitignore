@@ -1,0 +1,5 @@
+*.class
+*.jar
+*.png
+*.gitignore
+*.DS_store
