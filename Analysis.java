@@ -93,30 +93,23 @@ class Analysis extends LoopNestBaseListener {
             //Calculate the cache parameters from the given information
             if(!calcFilled)
             {
+                logLines = logSize - logBlock;
                 if(type == CacheTypes.FullyAssociative)
                 {
-                    logLines = logSize - logBlock;
                     logWays = logLines;
                     logSets = 0;
-                    setEnd = logBlock;
                 }
                 else if(type == CacheTypes.DirectMapped)
                 {
-                    logLines = logSize - logBlock;
-                    ways = 1;
                     logWays = 0;
                     logSets = logLines;
-                    setEnd = logSets + logBlock;
-
                 }
                 else if(type == CacheTypes.SetAssociative)
                 {
-                    logLines = logSize - logBlock;
                     logWays = log2(ways);
                     logSets = logLines - logWays;
-                    setEnd = logSets + logBlock;
-
                 }
+                setEnd = logSets + logBlock;
             }
         }
 
@@ -218,7 +211,7 @@ class Analysis extends LoopNestBaseListener {
                 case 256 : return 8;
                 case 512 : return 9;
                 case 1024 : return 10;
-                default : return -1;
+                default : throw new IllegalArgumentException();
             }
         }
     
@@ -271,6 +264,7 @@ class Analysis extends LoopNestBaseListener {
     @Override
     public void enterMethodDeclaration(final LoopNestParser.MethodDeclarationContext ctx) {
         if(dbg){System.out.println("enterMethodDeclaration");}
+
         cache = new CacheClass();
         loopStk = new Stack<>();
         arrays =  new HashMap<>();
@@ -281,12 +275,15 @@ class Analysis extends LoopNestBaseListener {
     @Override
     public void exitMethodDeclaration(final LoopNestParser.MethodDeclarationContext ctx) {
         if(dbg){System.out.println("exitMethodDeclaration");}
+        
         HashMap<String,Long> cacheMisses= new HashMap<>();
-        System.out.println("*********************************************************");
+        
         arrays.forEach((k,v) -> cacheMisses.put(v.name,v.cacheMisses));
+        result.add(cacheMisses);
+
+        System.out.println("*********************************************************");
         arrays.forEach((k,v) -> System.out.println("Answer: " + v.name + " : " + v.cacheMisses));
         System.out.println("*********************************************************");
-        result.add(cacheMisses);
     }
 
     @Override
