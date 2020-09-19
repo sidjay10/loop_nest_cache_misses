@@ -8,10 +8,6 @@ import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 
-
-
-
-
 // FIXME: You should limit your implementation to this class. You are free to add new auxilliary classes. You do not need to touch the LoopNext.g4 file.
 class Analysis extends LoopNestBaseListener {
 
@@ -240,11 +236,6 @@ class Analysis extends LoopNestBaseListener {
         {
             if(a > b) return a; else return b;
         }
-
-        long min(long a, long b)
-        {
-            if(a < b) return a; else return b;
-        }
     }
 
     class LoopAccesses {
@@ -332,7 +323,7 @@ class Analysis extends LoopNestBaseListener {
         {
             /*
                 * Local Variable being Declared is not a string
-                * Check whether it is a variable or array type and proceed accrodingly
+                * Check whether it is a primitive variable or array type and proceed accrodingly
             */
             if(ctx.unannType().unannPrimitiveType() != null)
             {
@@ -380,9 +371,9 @@ class Analysis extends LoopNestBaseListener {
                 arr.dim = 0;
                 switch(d)
                 {
-                    case "[]": /*System.out.println("1D");*/ arr.dim = 1; break;
-                    case "[][]": /*System.out.println("2D");*/ arr.dim = 2; break;
-                    case "[][][]": /*System.out.println("3D");*/ arr.dim = 3; break;
+                    case "[]":  arr.dim = 1; break;
+                    case "[][]":  arr.dim = 2; break;
+                    case "[][][]":  arr.dim = 3; break;
                     default : assert(false); break; 
                 }
 
@@ -405,10 +396,6 @@ class Analysis extends LoopNestBaseListener {
                         assert(false);
                     }
                 }
-                /*for(int i = 0; i < arr.dim; i++)
-                {
-                    System.out.println(arr.dims.get(i));
-                }*/
             }
         }
     }
@@ -519,18 +506,22 @@ class Analysis extends LoopNestBaseListener {
     public void exitArrayAccess(final LoopNestParser.ArrayAccessContext ctx) {
         
         String v = loopStk.peek().var;
+        
         if(dbg){System.out.println("Var = " + v);}
         if(dbg){System.out.println(ctx.getText());}
+        
         List<String> idx = new ArrayList<>();
         ctx.expressionName().forEach( (x) -> idx.add(x.getText()));
+        
         if(dbg){System.out.println(idx);}
+        
         ArraysClass arr = arrays.get(idx.get(0));
+        
         idx.remove(0);
         Collections.reverse(idx);
-        if(arr.idx == null)
-        {
-            arr.idx = idx;
-        }
+        
+        if(arr.idx == null){ arr.idx = idx; }
+        
         if(dbg){System.out.println(arr.idx);}
 
     }
@@ -538,15 +529,21 @@ class Analysis extends LoopNestBaseListener {
     @Override
     public void exitArrayAccess_lfno_primary(final LoopNestParser.ArrayAccess_lfno_primaryContext ctx) {
         String v = loopStk.peek().var;
+        
         if(dbg){System.out.println("Var = " + v);}
         if(dbg){System.out.println(ctx.getText());}
+        
         List<String> idx = new ArrayList<>();
         ctx.expressionName().forEach( (x) -> idx.add(x.getText()));
+        
         if(dbg){System.out.println(idx);}
+        
         ArraysClass arr = arrays.get(idx.get(0));
+        
         idx.remove(0);
         Collections.reverse(idx);
-        arr.idx = idx;
+        if(arr.idx == null){ arr.idx = idx; } 
+        
         if(dbg){System.out.println(arr.idx);}
     }
 
@@ -554,7 +551,5 @@ class Analysis extends LoopNestBaseListener {
     public void exitForStatement(final LoopNestParser.ForStatementContext ctx) {
         LoopAccesses loop = loopStk.pop();
         arrays.forEach( (k,v) -> v.updateAccess(loop,cache));
-        /*TODO Check This*/
     }
-
 }
